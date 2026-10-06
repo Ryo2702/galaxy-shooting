@@ -1,0 +1,38 @@
+export const missions = [
+  {
+    id: 'first-contact',
+    title: 'Clear the orbit',
+    detail: 'Destroy 10 asteroids',
+    stat: 'asteroids',
+    target: 10,
+    reward: 100,
+    icon: 'target',
+  },
+  {
+    id: 'silent-guardian',
+    title: 'Silent guardians',
+    detail: 'Destroy 5 enemy drones',
+    stat: 'drones',
+    target: 5,
+    reward: 250,
+    icon: 'shield',
+  },
+  {
+    id: 'star-performer',
+    title: 'Written in the stars',
+    detail: 'Reach 5,000 score in one flight',
+    stat: 'bestScore',
+    target: 5000,
+    reward: 500,
+    icon: 'star',
+  },
+  {
+    id: 'beyond-the-map',
+    title: 'Somewhere, out there',
+    detail: 'Follow the unknown signal',
+    stat: 'discoveries',
+    target: 1,
+    reward: 1000,
+    icon: 'orbit',
+  },
+];
