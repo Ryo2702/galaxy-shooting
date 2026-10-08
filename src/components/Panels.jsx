@@ -5,6 +5,7 @@ import { missions } from '../config/missions.js';
 import { gameConfig } from '../config/game.js';
 import { resolveQuality } from '../config/graphics.js';
 import Icon from './ui/Icon.jsx';
+import { WalletStatus } from './WalletConnect.jsx';
 
 const panelTitles = {
   WALLET: ['PERSONAL ORBITAL VAULT', 'Your little fortune.'],
@@ -104,7 +105,9 @@ export default function Panels({ panel }) {
 function Wallet() {
   const progress = useStore((s) => s.progress),
     session = useStore((s) => s.sessionEarnings),
-    storageWarning = useStore((s) => s.storageWarning);
+    storageWarning = useStore((s) => s.storageWarning),
+    address = useStore((s) => s.walletAddress),
+    openWalletPicker = useStore((s) => s.openWalletPicker);
   return (
     <>
       <div className="wallet-balance">
@@ -115,6 +118,26 @@ function Wallet() {
           <span>NOVA</span>
         </div>
         <small>Every token has a story. This one is yours.</small>
+      </div>
+      <div className="external-wallet">
+        <div className="subheading">
+          <h3>Solana wallet</h3>
+          <span>{address ? 'CONNECTED' : 'OPTIONAL'}</span>
+        </div>
+        {address ? (
+          <WalletStatus />
+        ) : (
+          <>
+            <p>
+              Share only your public address. NOVA progress remains local to
+              this browser.
+            </p>
+            <button className="primary-button wallet-panel-connect" onClick={openWalletPicker}>
+              Connect wallet
+              <Icon name="arrow" size={17} />
+            </button>
+          </>
+        )}
       </div>
       <div className="wallet-stats">
         <div>
@@ -225,8 +248,9 @@ function Wallet() {
         </p>
       )}
       <p className="fine-print">
-        NOVA is a fictional in-experience currency. No real-world value, wallet
-        connection, or account required. Progress is saved in this browser.
+        NOVA is a fictional in-experience currency with no real-world value or
+        transactions. Progress is saved in this browser; a connected Solana
+        wallet only shares its public address.
       </p>
     </>
   );
@@ -348,7 +372,8 @@ function Token() {
         <Icon name="info" size={19} />
         <p>
           Purely for the adventure. NOVA is simulated, has no cash value, and
-          never connects to a real blockchain.
+          never connects to a real blockchain. A Solana wallet connection only
+          shares a public address.
         </p>
       </div>
     </>

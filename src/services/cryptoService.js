@@ -99,5 +99,5 @@ export class MockCryptoService {
   }
 }
 
-// This is the only wallet adapter used by the store. No blockchain or keys involved.
+// This service only owns local NOVA progress; it never handles blockchain keys.
 export const cryptoService = new MockCryptoService();

@@ -4,6 +4,30 @@ import { audio } from '../services/audioService.js';
 import { missions } from '../config/missions.js';
 import { gameConfig } from '../config/game.js';
 import { resetInput } from '../game/input.js';
+import {
+  connectWallet as connectProvider,
+  disconnectWallet as disconnectProvider,
+  getSolanaAccount,
+  onWalletChange,
+} from '../services/walletService.js';
+
+let walletEventsOff = () => {};
+
+function clearWalletConnection(set) {
+  walletEventsOff();
+  walletEventsOff = () => {};
+  set({
+    walletProvider: null,
+    walletName: null,
+    walletAddress: null,
+  });
+}
+
+function walletErrorMessage(name, error) {
+  if (error?.code === 'WALLET_NOT_FOUND') return error.message;
+  if (error?.code === 'WALLET_ACCOUNT_UNAVAILABLE') return error.message;
+  return `${name} connection was not completed.`;
+}
 
 function completeMissions(progress) {
   const unlocked = missions.filter(
@@ -35,6 +59,12 @@ export const useStore = create((set, get) => ({
   soundEnabled: false,
   progress: cryptoService.load(),
   storageWarning: false,
+  walletPickerOpen: false,
+  walletProvider: null,
+  walletName: null,
+  walletAddress: null,
+  walletConnecting: false,
+  walletError: null,
   gameStatus: 'idle',
   gameReady: false,
   gameId: 0,
@@ -46,6 +76,47 @@ export const useStore = create((set, get) => ({
   notice: null,
   notify: (text, type = 'info') =>
     set({ notice: { text, type, id: Date.now() } }),
+  openWalletPicker: () => set({ walletPickerOpen: true, walletError: null }),
+  closeWalletPicker: () => set({ walletPickerOpen: false }),
+  connectWallet: async (name) => {
+    if (get().walletConnecting) return;
+    set({ walletConnecting: true, walletError: null });
+    try {
+      const { wallet, account } = await connectProvider(name);
+      walletEventsOff();
+      walletEventsOff = onWalletChange(wallet, (accounts) => {
+        const nextAccount = getSolanaAccount(accounts);
+        if (!nextAccount) {
+          clearWalletConnection(set);
+          return;
+        }
+        set({ walletAddress: nextAccount.address, walletError: null });
+      });
+      set({
+        walletProvider: wallet,
+        walletName: wallet.name,
+        walletAddress: account.address,
+        walletConnecting: false,
+        walletError: null,
+      });
+    } catch (error) {
+      set({
+        walletConnecting: false,
+        walletError: walletErrorMessage(name, error),
+      });
+    }
+  },
+  disconnectWallet: async () => {
+    const provider = get().walletProvider;
+    try {
+      await disconnectProvider(provider);
+    } catch {
+      // The app still clears its local view if a wallet extension rejects disconnect.
+    } finally {
+      clearWalletConnection(set);
+      set({ walletConnecting: false, walletError: null });
+    }
+  },
   initialize: () => {
     audio.play('click');
     set({ initialized: true, scene: 'GALAXY' });

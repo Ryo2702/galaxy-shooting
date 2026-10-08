@@ -6,6 +6,87 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+test('connects to a Wallet Standard Phantom provider and disconnects cleanly', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const address = 'So11111111111111111111111111111111111111112';
+    const account = {
+      address,
+      publicKey: new Uint8Array(32),
+      chains: ['solana:mainnet'],
+      features: [],
+    };
+    const listeners = new Set();
+    const wallet = {
+      version: '1.0.0',
+      name: 'Phantom',
+      icon: 'data:image/svg+xml;base64,PHN2Zy8+',
+      chains: ['solana:mainnet'],
+      accounts: [],
+      features: {
+        'standard:connect': {
+          version: '1.0.0',
+          connect: async () => ({ accounts: [account] }),
+        },
+        'standard:disconnect': {
+          version: '1.0.0',
+          disconnect: async () => {
+            window.__phantomDisconnected = true;
+          },
+        },
+        'standard:events': {
+          version: '1.0.0',
+          on: (_event, listener) => {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+          },
+        },
+      },
+    };
+    addEventListener('wallet-standard:app-ready', (event) =>
+      event.detail.register(wallet),
+    );
+  });
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/');
+  await expect(
+    page.getByRole('button', { name: 'Connect wallet', exact: true }),
+  ).toBeVisible({ timeout: 20000 });
+  await page.getByRole('button', { name: 'Connect wallet', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Connect wallet' })).toBeVisible();
+  await expect(page.locator('.wallet-option')).toHaveCount(2);
+  await page
+    .locator('button.wallet-option')
+    .filter({ hasText: 'Phantom' })
+    .click();
+  await expect(page.getByRole('dialog')).toContainText('Connected');
+  await expect(page.getByTestId('wallet-address')).toHaveText('So11...1112');
+  await page.getByRole('button', { name: 'Disconnect', exact: true }).click();
+  await expect(page.locator('.wallet-option')).toHaveCount(2);
+  expect(await page.evaluate(() => window.__phantomDisconnected)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('reports an unavailable Phantom extension without redirecting', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Connect wallet', exact: true }).click();
+  await page
+    .locator('button.wallet-option')
+    .filter({ hasText: 'Phantom' })
+    .click();
+  await expect(page.getByRole('alert')).toContainText(
+    'Phantom wallet extension not detected.',
+  );
+  await expect(
+    page.getByRole('link', { name: 'Install Phantom', exact: true }),
+  ).toHaveAttribute('href', 'https://phantom.com/download');
+  await expect(page).toHaveURL(/127\.0\.0\.1|localhost/);
+});
+
 test('entry, destinations, discovery rewards, saved wallet and mobile controls', async ({
   page,
 }) => {

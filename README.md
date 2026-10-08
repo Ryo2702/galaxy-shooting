@@ -1,6 +1,6 @@
 # NOVA VERSE
 
-A full-screen, procedural space experience. Explore a 3D system, defend the asteroid belt, complete missions, earn fictional NOVA, and unlock the Void Sector. Everything works without downloaded models, accounts, or a backend.
+A full-screen, procedural space experience. Explore a 3D system, defend the asteroid belt, complete missions, earn fictional NOVA, and unlock the Void Sector. Everything works without downloaded models, accounts, or a backend; an optional Solana wallet connection shares only a public address.
 
 ## Run
 
@@ -54,9 +54,9 @@ The loading screen represents module and renderer initialization; there are no h
 
 ## Local progress and currency
 
-`MockCryptoService` is the only wallet adapter used by the store. It validates credits and reads/writes `nova-verse.progress.v1` in localStorage. Saved data is normalized on load; unavailable storage produces a wallet warning without interrupting the session. Transaction history is bounded at 60 entries and flight records at 10. There is no login, blockchain, financial value, or online leaderboard. Browser data can be edited or cleared by its owner.
+`MockCryptoService` owns the fictional NOVA balance and reads/writes `nova-verse.progress.v1` in localStorage. Saved data is normalized on load; unavailable storage produces a wallet warning without interrupting the session. Transaction history is bounded at 60 entries and flight records at 10. NOVA never connects to a blockchain or has financial value. The optional Phantom/Solflare integration uses Solana Wallet Standard to request connection permission and keep only the in-memory public address; it never signs or sends transactions. There is no login or online leaderboard. Browser data can be edited or cleared by its owner.
 
-A future server-backed or Web3 adapter belongs behind `cryptoService`; it would need its own authorization and authoritative reward validation. No speculative blockchain dependency is included here.
+Any future server-backed reward system belongs behind `cryptoService`; it would need its own authorization and authoritative reward validation.
 
 ## Implementation references
 

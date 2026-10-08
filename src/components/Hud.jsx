@@ -36,7 +36,8 @@ export function Header() {
     balance = useStore((s) => s.progress.balance),
     sound = useStore((s) => s.soundEnabled),
     scene = useStore((s) => s.scene),
-    navigate = useStore((s) => s.navigate);
+    navigate = useStore((s) => s.navigate),
+    openWalletPicker = useStore((s) => s.openWalletPicker);
   return (
     <header className="top-hud">
       <button
@@ -56,6 +57,12 @@ export function Header() {
         </span>
       </div>
       <div className="top-actions">
+        <button
+          className="wallet-connect-trigger"
+          onClick={openWalletPicker}
+        >
+          Connect wallet
+        </button>
         <button
           className="balance-button"
           onClick={() => navigate('WALLET')}

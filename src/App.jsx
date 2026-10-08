@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useStore } from './store/useStore.js';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
+import WalletConnect from './components/WalletConnect.jsx';
 import {
   Header,
   EntryAndHub,
@@ -40,7 +41,8 @@ export default function App() {
     const keyboard = (e) => {
       if (e.key === 'Escape') {
         const s = useStore.getState();
-        if (s.panel) s.closePanel();
+        if (s.walletPickerOpen) s.closeWalletPicker();
+        else if (s.panel) s.closePanel();
         else if (s.scene === 'GAME') s.pauseGame();
         else if (s.initialized && s.scene !== 'GALAXY') s.navigate('GALAXY');
       }
@@ -118,6 +120,7 @@ export default function App() {
             </Suspense>
           )}
         </AnimatePresence>
+        <WalletConnect />
         <Notifications />
         <motion.div
           className="intro-darkness"
